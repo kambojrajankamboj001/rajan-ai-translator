@@ -1,65 +1,86 @@
-const inputText = document.getElementById("inputText");
-const outputText = document.getElementById("outputText");
-const fromLang = document.getElementById("fromLang");
-const toLang = document.getElementById("toLang");
-const status = document.getElementById("status");
+* {
+  box-sizing: border-box;
+}
 
-document.getElementById("swapBtn").onclick = () => {
-  const oldFrom = fromLang.value;
-  fromLang.value = toLang.value;
-  toLang.value = oldFrom;
+body {
+  margin: 0;
+  padding: 25px 16px;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #101a45, #5426a8, #087eaa);
+  color: white;
+  text-align: center;
+}
 
-  const oldText = inputText.value;
-  inputText.value = outputText.value;
-  outputText.value = oldText;
-};
+h1 {
+  font-size: 34px;
+  margin: 20px 0;
+}
 
-document.getElementById("translateBtn").onclick = async () => {
-  const text = inputText.value.trim();
+p {
+  font-size: 18px;
+  margin-bottom: 28px;
+}
 
-  if (!text) {
-    status.textContent = "Pehle text likho!";
-    return;
+select,
+textarea {
+  padding: 13px;
+  margin: 6px 3px;
+  border: 2px solid #d8dfff;
+  border-radius: 12px;
+  font-size: 17px;
+  max-width: 100%;
+}
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+  display: block;
+  background: white;
+  color: #172044;
+  resize: vertical;
+}
+
+button {
+  padding: 12px 20px;
+  margin: 6px 3px;
+  border: none;
+  border-radius: 12px;
+  background: #00d4ff;
+  color: #102044;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+#translateBtn {
+  background: #ffcf40;
+}
+
+#status {
+  margin-top: 18px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 18px 12px;
   }
 
-  status.textContent = "Translating...";
-
-  try {
-    const response = await fetch("/api/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        text: text,
-        from: fromLang.value,
-        to: toLang.value
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Translation failed");
-    }
-
-    outputText.value = data.translation;
-    status.textContent = "Translation complete!";
-  } catch (error) {
-    status.textContent =
-      "Backend connect nahi hua. Next step mein setup karenge.";
+  h1 {
+    font-size: 28px;
   }
-};
 
-document.getElementById("copyBtn").onclick = async () => {
-  if (!outputText.value) return;
+  select {
+    width: 42%;
+  }
 
-  await navigator.clipboard.writeText(outputText.value);
-  status.textContent = "Translation copied!";
-};
-
-document.getElementById("clearBtn").onclick = () => {
-  inputText.value = "";
-  outputText.value = "";
-  status.textContent = "";
-};
+  textarea {
+    width: 100%;
+  }
+}
