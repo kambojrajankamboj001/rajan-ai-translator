@@ -177,3 +177,31 @@ speech.onerror = (event) => {
 
   status.textContent = "Speaking...";
 };
+function detectLanguage(text) {
+  if (/[\u0900-\u097F]/.test(text)) return "hi";
+  if (/[\u0A00-\u0A7F]/.test(text)) return "pa";
+  if (/[\u0600-\u06FF]/.test(text)) return "ur";
+  if (/[\u0980-\u09FF]/.test(text)) return "bn";
+  if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
+  if (/[\u0C00-\u0C7F]/.test(text)) return "te";
+  if (/[\u0A80-\u0AFF]/.test(text)) return "gu";
+
+  if (/[a-zA-Z]/.test(text)) return "en";
+
+  return null;
+}
+
+inputText.addEventListener("input", () => {
+  const detected = detectLanguage(inputText.value.trim());
+
+  if (!detected) return;
+
+  const option = Array.from(fromLang.options).find(
+    option => getLanguageCode(option.value) === detected
+  );
+
+  if (option) {
+    fromLang.value = option.value;
+    status.textContent = "Language detected automatically!";
+  }
+});
