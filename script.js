@@ -146,6 +146,39 @@ voiceBtn.onclick = () => {
   };
 
   recognition.start();
+  document.getElementById("speakBtn").onclick = () => {
+  const text = outputText.value.trim();
+
+  if (!text) {
+    status.textContent = "Pehle translate karo!";
+    return;
+  }
+
+  if (!("speechSynthesis" in window)) {
+    status.textContent = "Speaker supported nahi hai.";
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = "en-US";
+  speech.rate = 0.9;
+
+  speech.onstart = () => {
+    status.textContent = "Speaking...";
+  };
+
+  speech.onend = () => {
+    status.textContent = "Finished!";
+  };
+
+  speech.onerror = (event) => {
+    status.textContent = "Voice error: " + event.error;
+  };
+
+  window.speechSynthesis.speak(speech);
+};
 document.getElementById("speakBtn").onclick = () => {
   const text = outputText.value.trim();
 
