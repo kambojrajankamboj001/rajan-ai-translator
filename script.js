@@ -116,3 +116,34 @@ document.getElementById("clearBtn").onclick = () => {
   outputText.value = "";
   status.textContent = "";
 };
+const voiceBtn = document.getElementById("voiceBtn");
+const voiceStatus = document.getElementById("voiceStatus");
+
+voiceBtn.onclick = () => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    voiceStatus.textContent = "Voice feature is not supported.";
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = getLanguageCode(fromLang.value);
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  voiceStatus.textContent = "Listening...";
+
+  recognition.onresult = (event) => {
+    inputText.value = event.results[0][0].transcript;
+    voiceStatus.textContent = "Voice captured!";
+  };
+
+  recognition.onerror = () => {
+    voiceStatus.textContent = "Please try again.";
+  };
+
+  recognition.start();
+};
