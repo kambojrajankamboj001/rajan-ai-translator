@@ -164,10 +164,16 @@ document.getElementById("speakBtn").onclick = () => {
 
   const speech = new SpeechSynthesisUtterance(text);
 
-  speech.lang = getLanguageCode(toLang.value);
+  speech.lang = "en-US";
   speech.rate = 0.9;
 
-  window.speechSynthesis.speak(speech);
+  speech.onstart = () => {
+  status.textContent = "Speaking...";
+};
+
+speech.onerror = (event) => {
+  status.textContent = "Voice error: " + event.error;
+};
 
   status.textContent = "Speaking...";
 };
