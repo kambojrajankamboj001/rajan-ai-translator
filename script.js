@@ -5,6 +5,14 @@ const fromLang = document.getElementById("fromLang");
 const toLang = document.getElementById("toLang");
 const status = document.getElementById("status");
 
+const voiceBtn = document.getElementById("voiceBtn");
+const voiceStatus = document.getElementById("voiceStatus");
+const speakBtn = document.getElementById("speakBtn");
+const translateBtn = document.getElementById("translateBtn");
+const copyBtn = document.getElementById("copyBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+// Language codes
 const languageCodes = {
   hindi: "hi",
   english: "en",
@@ -31,211 +39,194 @@ function getLanguageCode(value) {
   return languageCodes[key] || key;
 }
 
-document.getElementById("swapBtn").onclick = () => {
-  const oldFrom = fromLang.value;
-  fromLang.value = toLang.value;
-  toLang.value = oldFrom;
+function showStatus(message) {
+  if (status) status.textContent = message;
+}
 
-  const oldText = inputText.value;
-  inputText.value = outputText.value;
-  outputText.value = oldText;
-};
+// TRANSLATE
+if (translateBtn) {
+  translateBtn.onclick = async () => {
+    const text = inputText.value.trim();
 
-document.getElementById("translateBtn").onclick = async () => {
-  const text = inputText.value.trim();
-
-  if (!text) {
-    status.textContent = "Pehle text likho!";
-    return;
-  }
-
-  if (text.length > 400) {
-    status.textContent = "Abhi 400 characters tak text likhein.";
-    return;
-  }
-
-  const from = getLanguageCode(fromLang.value);
-  const to = getLanguageCode(toLang.value);
-
-  if (from === to) {
-    status.textContent = "Dono languages alag select karein.";
-    return;
-  }
-
-  status.textContent = "Translating... Please wait";
-
-  try {
-    const params = new URLSearchParams({
-      q: text,
-      langpair: `${from}|${to}`
-    });
-
-    const response = await fetch(
-      `https://api.mymemory.translated.net/get?${params}`
-    );
-
-    if (!response.ok) {
-      throw new Error("API connection failed");
+    if (!text) {
+      showStatus("Please enter some text!");
+      return;
     }
 
-    const data = await response.json();
-
-    if (
-      data.responseStatus !== 200 ||
-      !data.responseData?.translatedText
-    ) {
-      throw new Error("Translation unavailable");
+    if (text.length > 500) {
+      showStatus("Please enter maximum 500 characters.");
+      return;
     }
 
-    outputText.value = data.responseData.translatedText;
-    status.textContent = "Translation complete!";
+    const from = getLanguageCode(fromLang.value);
+    const to = getLanguageCode(toLang.value);
 
-  } catch (error) {
-    console.error(error);
-    status.textContent =
-      "Translation nahi hua. Thodi der baad try karein.";
-  }
-};
+    if (from === to) {
+      outputText.value = text;
+      showStatus("Both languages are same!");
+      return;
+    }
 
-document.getElementById("copyBtn").onclick = async () => {
-  if (!outputText.value) {
-    status.textContent = "Copy karne ke liye text nahi hai.";
-    return;
-  }
+    try {
+      showStatus("Translating...");
+      translateBtn.disabled = true;
 
-  try {
-    await navigator.clipboard.writeText(outputText.value);
-    status.textContent = "Translation copied!";
-  } catch {
-    status.textContent = "Copy nahi hua.";
-  }
-};
+      const url =
+        "https://api.mymemory.translated.net/get?q=" +
+        encodeURIComponent(text) +
+        "&langpair=" +
+        encodeURIComponent(from + "|" + to);
 
-document.getElementById("clearBtn").onclick = () => {
-  inputText.value = "";
-  outputText.value = "";
-  status.textContent = "";
-};
-const voiceBtn = document.getElementById("voiceBtn");
-const voiceStatus = document.getElementById("voiceStatus");
+      const response = await fetch(url);
+      const data = await response.json();
 
-voiceBtn.onclick = () => {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (data.responseStatus === 200) {
+        outputText.value = data.responseData.translatedText;
+        showStatus("Translation successful!");
+      } else {
+        showStatus("Translation failed. Please try again.");
+      }
 
-  if (!SpeechRecognition) {
-    voiceStatus.textContent = "Voice feature is not supported.";
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-
-  recognition.lang = "hi-IN";
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  voiceStatus.textContent = "Listening...";
-
-  recognition.onresult = (event) => {
-    inputText.value = event.results[0][0].transcript;
-    voiceStatus.textContent = "Voice captured!";
+    } catch (error) {
+      showStatus("Internet connection error!");
+    } finally {
+      translateBtn.disabled = false;
+    }
   };
+}
 
-  recognition.onerror = () => {
-    voiceStatus.textContent = "Please try again.";
+// VOICE INPUT
+if (voiceBtn) {
+  voiceBtn.onclick = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      if (voiceStatus) {
+        voiceStatus.textContent = "Voice not supported.";
+      }
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "hi-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    if (voiceStatus) {
+      voiceStatus.textContent = "Listening...";
+    }
+
+    recognition.onresult = (event) => {
+      inputText.value =
+        event.results[0][0].transcript;
+
+      if (voiceStatus) {
+        voiceStatus.textContent = "Voice captured!";
+      }
+    };
+
+    recognition.onerror = () => {
+      if (voiceStatus) {
+        voiceStatus.textContent = "Please try again.";
+      }
+    };
+
+    recognition.start();
   };
+}
 
-  recognition.start();
-  document.getElementById("speakBtn").onclick = () => {
-  const text = outputText.value.trim();
+// SPEAKER OUTPUT
+if (speakBtn) {
+  speakBtn.onclick = () => {
+    const text = outputText.value.trim();
 
-  if (!text) {
-    status.textContent = "Pehle translate karo!";
-    return;
-  }
+    if (!text) {
+      showStatus("Pehle translate karo!");
+      return;
+    }
 
-  if (!("speechSynthesis" in window)) {
-    status.textContent = "Speaker supported nahi hai.";
-    return;
-  }
+    if (!("speechSynthesis" in window)) {
+      showStatus("Speaker not supported.");
+      return;
+    }
 
-  window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
 
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speech.rate = 0.9;
+    const speech = new SpeechSynthesisUtterance(text);
 
-  speech.onstart = () => {
-    status.textContent = "Speaking...";
+    const targetLanguage =
+      getLanguageCode(toLang.value);
+
+    const speechLanguages = {
+      en: "en-US",
+      hi: "hi-IN",
+      pa: "pa-IN",
+      ur: "ur-PK",
+      bn: "bn-IN",
+      gu: "gu-IN",
+      mr: "mr-IN",
+      ta: "ta-IN",
+      te: "te-IN",
+      fr: "fr-FR",
+      de: "de-DE",
+      es: "es-ES",
+      it: "it-IT",
+      ja: "ja-JP",
+      zh: "zh-CN"
+    };
+
+    speech.lang =
+      speechLanguages[targetLanguage] || targetLanguage;
+
+    speech.rate = 0.9;
+
+    speech.onstart = () => {
+      showStatus("Speaking...");
+    };
+
+    speech.onend = () => {
+      showStatus("Finished!");
+    };
+
+    speech.onerror = (event) => {
+      showStatus("Voice error: " + event.error);
+    };
+
+    window.speechSynthesis.speak(speech);
   };
+}
 
-  speech.onend = () => {
-    status.textContent = "Finished!";
+// COPY
+if (copyBtn) {
+  copyBtn.onclick = async () => {
+    if (!outputText.value.trim()) {
+      showStatus("Nothing to copy!");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(outputText.value);
+      showStatus("Copied successfully!");
+    } catch (error) {
+      showStatus("Copy failed!");
+    }
   };
+}
 
-  speech.onerror = (event) => {
-    status.textContent = "Voice error: " + event.error;
+// CLEAR
+if (clearBtn) {
+  clearBtn.onclick = () => {
+    inputText.value = "";
+    outputText.value = "";
+    showStatus("Cleared!");
+    if (voiceStatus) voiceStatus.textContent = "";
   };
+}
 
-  window.speechSynthesis.speak(speech);
-};
-document.getElementById("speakBtn").onclick = () => {
-  const text = outputText.value.trim();
-
-  if (!text) {
-    status.textContent = "Pehle translate karo!";
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-US";
-  speech.rate = 0.9;
-
-  speech.onstart = () => {
-    status.textContent = "Speaking...";
-  };
-
-  speech.onend = () => {
-    status.textContent = "Finished!";
-  };
-
-  speech.onerror = (event) => {
-    status.textContent = "Voice error: " + event.error;
-  };
-
-  window.speechSynthesis.speak(speech);
-};
-  const text = outputText.value.trim();
-
-  if (!text) {
-    status.textContent = "Pehle translate karo!";
-    return;
-  }
-
-  if (!("speechSynthesis" in window)) {
-    status.textContent = "Speaker supported nahi hai.";
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-
-  const speech = new SpeechSynthesisUtterance(text);
-
-  speech.lang = "en-US";
-  speech.rate = 0.9;
-
-  speech.onstart = () => {
-  status.textContent = "Speaking...";
-};
-
-speech.onerror = (event) => {
-  status.textContent = "Voice error: " + event.error;
-};
-
-  status.textContent = "Speaking...";
-};
+// AUTOMATIC LANGUAGE DETECTION
 function detectLanguage(text) {
   if (/[\u0900-\u097F]/.test(text)) return "hi";
   if (/[\u0A00-\u0A7F]/.test(text)) return "pa";
@@ -244,7 +235,6 @@ function detectLanguage(text) {
   if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
   if (/[\u0C00-\u0C7F]/.test(text)) return "te";
   if (/[\u0A80-\u0AFF]/.test(text)) return "gu";
-
   if (/[a-zA-Z]/.test(text)) return "en";
 
   return null;
@@ -261,6 +251,6 @@ inputText.addEventListener("input", () => {
 
   if (option) {
     fromLang.value = option.value;
-    status.textContent = "Language detected automatically!";
+    showStatus("Language detected automatically!");
   }
 });
