@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Translator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>🌐 AI Translator</h1>
+    <p>Translate any language instantly</p>
+
+    <div class="languages">
+      <select id="fromLang">
+        <option value="Hindi">Hindi</option>
+        <option value="English">English</option>
+        <option value="Punjabi">Punjabi</option>
+        <option value="French">French</option>
+        <option value="Urdu">Urdu</option>
+      </select>
+
+      <button id="swapBtn">⇄</button>
+
+      <select id="toLang">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Punjabi">Punjabi</option>
+        <option value="French">French</option>
+        <option value="Urdu">Urdu</option>
+      </select>
+    </div>
+
+    <textarea id="inputText"
+      placeholder="Yahan text likho..."></textarea>
+
+    <button id="translateBtn">Translate ✨</button>
+
+    <textarea id="outputText"
+      placeholder="Translation yahan aayega..."
+      readonly></textarea>
+
+    <div class="buttons">
+      <button id="copyBtn">Copy</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
