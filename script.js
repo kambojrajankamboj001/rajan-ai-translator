@@ -147,3 +147,27 @@ voiceBtn.onclick = () => {
 
   recognition.start();
 };
+document.getElementById("speakBtn").onclick = () => {
+  const text = outputText.value.trim();
+
+  if (!text) {
+    status.textContent = "Pehle translate karo!";
+    return;
+  }
+
+  if (!("speechSynthesis" in window)) {
+    status.textContent = "Speaker supported nahi hai.";
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(text);
+
+  speech.lang = getLanguageCode(toLang.value);
+  speech.rate = 0.9;
+
+  window.speechSynthesis.speak(speech);
+
+  status.textContent = "Speaking...";
+};
