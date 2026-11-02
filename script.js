@@ -1,8 +1,35 @@
+
 const inputText = document.getElementById("inputText");
 const outputText = document.getElementById("outputText");
 const fromLang = document.getElementById("fromLang");
 const toLang = document.getElementById("toLang");
 const status = document.getElementById("status");
+
+const languageCodes = {
+  hindi: "hi",
+  english: "en",
+  punjabi: "pa",
+  urdu: "ur",
+  bengali: "bn",
+  spanish: "es",
+  french: "fr",
+  german: "de",
+  arabic: "ar",
+  chinese: "zh",
+  japanese: "ja",
+  russian: "ru",
+  italian: "it",
+  portuguese: "pt",
+  tamil: "ta",
+  telugu: "te",
+  marathi: "mr",
+  gujarati: "gu"
+};
+
+function getLanguageCode(value) {
+  const key = value.trim().toLowerCase();
+  return languageCodes[key] || key;
+}
 
 document.getElementById("swapBtn").onclick = () => {
   const oldFrom = fromLang.value;
@@ -22,40 +49,66 @@ document.getElementById("translateBtn").onclick = async () => {
     return;
   }
 
-  status.textContent = "Translating...";
+  if (text.length > 400) {
+    status.textContent = "Abhi 400 characters tak text likhein.";
+    return;
+  }
+
+  const from = getLanguageCode(fromLang.value);
+  const to = getLanguageCode(toLang.value);
+
+  if (from === to) {
+    status.textContent = "Dono languages alag select karein.";
+    return;
+  }
+
+  status.textContent = "Translating... Please wait";
 
   try {
-    const response = await fetch("/api/translate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        text: text,
-        from: fromLang.value,
-        to: toLang.value
-      })
+    const params = new URLSearchParams({
+      q: text,
+      langpair: `${from}|${to}`
     });
+
+    const response = await fetch(
+      `https://api.mymemory.translated.net/get?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error("API connection failed");
+    }
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Translation failed");
+    if (
+      data.responseStatus !== 200 ||
+      !data.responseData?.translatedText
+    ) {
+      throw new Error("Translation unavailable");
     }
 
-    outputText.value = data.translation;
+    outputText.value = data.responseData.translatedText;
     status.textContent = "Translation complete!";
+
   } catch (error) {
+    console.error(error);
     status.textContent =
-      "Backend connect nahi hua. Next step mein setup karenge.";
+      "Translation nahi hua. Thodi der baad try karein.";
   }
 };
 
 document.getElementById("copyBtn").onclick = async () => {
-  if (!outputText.value) return;
+  if (!outputText.value) {
+    status.textContent = "Copy karne ke liye text nahi hai.";
+    return;
+  }
 
-  await navigator.clipboard.writeText(outputText.value);
-  status.textContent = "Translation copied!";
+  try {
+    await navigator.clipboard.writeText(outputText.value);
+    status.textContent = "Translation copied!";
+  } catch {
+    status.textContent = "Copy nahi hua.";
+  }
 };
 
 document.getElementById("clearBtn").onclick = () => {
