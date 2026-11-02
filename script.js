@@ -130,7 +130,7 @@ voiceBtn.onclick = () => {
 
   const recognition = new SpeechRecognition();
 
-  recognition.lang = getLanguageCode(fromLang.value);
+  recognition.lang = "hi-IN";
   recognition.continuous = false;
   recognition.interimResults = false;
 
