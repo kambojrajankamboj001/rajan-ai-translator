@@ -106,9 +106,9 @@ voiceBtn.onclick = () => {
     voiceStatus.textContent = "Voice captured!";
   };
 
-  recognition.onerror = () => {
-    voiceStatus.textContent = "Please try again.";
-  };
+  recognition.onerror = (event) => {
+  voiceStatus.textContent = "Voice Error: " + event.error;
+};
 
   recognition.onend = () => {
     if (voiceStatus.textContent === "Listening...") {
