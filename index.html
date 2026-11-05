@@ -11,6 +11,22 @@
 <body>
 
   <div class="container"> 
+    
+<div id="authBox" style="margin:15px auto; text-align:center;">
+  <button id="googleLogin" type="button"
+    style="padding:12px 20px; border:1px solid #ccc; border-radius:10px; background:white; color:#333; font-size:16px; cursor:pointer;">
+    🌐 Continue with Google
+  </button>
+
+  <div id="userInfo" style="display:none; margin:10px;">
+    <img id="userPhoto" alt="Profile"
+      style="width:40px;height:40px;border-radius:50%;vertical-align:middle;">
+    <span id="userName"></span>
+    <button id="logoutBtn" type="button">Logout</button>
+  </div>
+  <p id="loginStatus" style="font-size:13px;"></p>
+</div>
+
     <img src="dp.png" alt="Rajan AI Translator" width="100">
     <h1>🌐 Rajan AI Translator</h1>
     <p class="subtitle">Translate any language instantly</p>
