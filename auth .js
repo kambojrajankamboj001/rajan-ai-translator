@@ -19,12 +19,17 @@ const firebaseConfig = {
   appId: "1:670745367116:web:847415d683fb8005f2dae9"
 };
 
-// Initialize Firebase
+// Firebase Initialize
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+provider.setCustomParameters({
+  prompt: "select_account"
+});
+
 // HTML Elements
+const authBox = document.getElementById("authBox");
 const loginBtn = document.getElementById("googleLogin");
 const logoutBtn = document.getElementById("logoutBtn");
 const userInfo = document.getElementById("userInfo");
@@ -32,40 +37,98 @@ const userName = document.getElementById("userName");
 const userPhoto = document.getElementById("userPhoto");
 const loginStatus = document.getElementById("loginStatus");
 
-// Google Login
-loginBtn.onclick = async () => {
+// Check HTML elements
+if (!authBox || !loginBtn || !logoutBtn ||
+    !userInfo || !userName || !userPhoto || !loginStatus) {
+  throw new Error("Login HTML elements missing. Check your element IDs.");
+}
+
+// Keep login box visible outside the app content
+document.body.prepend(authBox);
+
+// Lock and unlock website content
+const pageElements = [...document.body.children].filter(
+  element => element !== authBox && element.tagName !== "SCRIPT"
+);
+
+function lockWebsite() {
+  pageElements.forEach(element => {
+    element.hidden = true;
+    element.inert = true;
+  });
+
+  authBox.style.display = "block";
+  loginBtn.style.display = "inline-block";
+  userInfo.style.display = "none";
+}
+
+function unlockWebsite() {
+  pageElements.forEach(element => {
+    element.hidden = false;
+    element.inert = false;
+  });
+
+  loginBtn.style.display = "none";
+  userInfo.style.display = "block";
+}
+
+// Login
+loginBtn.addEventListener("click", async () => {
+  loginBtn.disabled = true;
+  loginStatus.textContent = "Connecting to Google...";
+
   try {
-    loginStatus.textContent = "Opening Google Login...";
     await signInWithPopup(auth, provider);
     loginStatus.textContent = "Login successful!";
   } catch (error) {
-    console.error(error);
-    loginStatus.textContent = "Login failed: " + error.message;
-  }
-};
+    console.error("Firebase Login Error:", error);
 
-// Check Login Status
+    loginStatus.textContent =
+      "Login Error: " + error.code;
+
+    loginBtn.disabled = false;
+  }
+});
+
+// Authentication Status
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    loginBtn.style.display = "none";
-    userInfo.style.display = "block";
+    unlockWebsite();
 
-    userName.textContent = "Welcome, " + user.displayName;
-    userPhoto.src = user.photoURL || "";
+    userName.textContent =
+      "Welcome, " + (user.displayName || "User");
+
+    if (user.photoURL) {
+      userPhoto.src = user.photoURL;
+      userPhoto.style.display = "inline-block";
+    } else {
+      userPhoto.style.display = "none";
+    }
+
+    loginStatus.textContent = "You are logged in!";
   } else {
-    loginBtn.style.display = "inline-block";
-    userInfo.style.display = "none";
+    lockWebsite();
+
     userName.textContent = "";
     userPhoto.src = "";
+    userPhoto.style.display = "none";
+    loginBtn.disabled = false;
+
+    loginStatus.textContent = "Please login to continue.";
   }
 });
 
 // Logout
-logoutBtn.onclick = async () => {
+logoutBtn.addEventListener("click", async () => {
+  logoutBtn.disabled = true;
+
   try {
     await signOut(auth);
     loginStatus.textContent = "Logged out successfully!";
   } catch (error) {
-    loginStatus.textContent = error.message;
+    console.error("Logout Error:", error);
+    loginStatus.textContent = "Logout Error: " + error.code;
+  } finally {
+    logoutBtn.disabled = false;
   }
-};
+});
