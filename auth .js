@@ -14,24 +14,28 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const loginBtn = document.getElementById("googleLogin");
+// Button ko naam se nahi, text se dhoondenge
+const loginBtn = document.getElementById("googleLogin") || [...document.querySelectorAll("button")].find(b => b.textContent.includes("Continue with Google"));
 const logoutBtn = document.getElementById("logoutBtn");
 const userInfo = document.getElementById("userInfo");
 const userName = document.getElementById("userName");
 const userPhoto = document.getElementById("userPhoto");
 const loginStatus = document.getElementById("loginStatus");
 
+console.log("Login button mila?", !!loginBtn);
+
 if (loginBtn) {
   loginBtn.addEventListener("click", async () => {
-    if (loginStatus) loginStatus.textContent = "Google khul raha hai...";
+    alert("Google khul raha hai...");
     try {
       const result = await signInWithPopup(auth, provider);
-      if (loginStatus) loginStatus.textContent = "Welcome " + result.user.displayName;
+      alert("Welcome " + result.user.displayName);
     } catch (error) {
-      if (loginStatus) loginStatus.textContent = "Error: " + error.message;
-      alert(error.message);
+      alert("Error: " + error.message);
     }
   });
+} else {
+  alert("Button nahi mila! index.html me button check karo");
 }
 
 if (logoutBtn) {
@@ -46,7 +50,6 @@ onAuthStateChanged(auth, (user) => {
     if (userInfo) userInfo.style.display = "block";
     if (userName) userName.textContent = user.displayName;
     if (userPhoto) userPhoto.src = user.photoURL;
-    if (loginStatus) loginStatus.textContent = "Welcome " + user.displayName;
   } else {
     if (loginBtn) loginBtn.style.display = "block";
     if (userInfo) userInfo.style.display = "none";
