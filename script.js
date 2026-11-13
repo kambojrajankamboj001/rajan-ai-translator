@@ -113,6 +113,11 @@ translateBtn.onclick = async () => {
     ) {
 
       outputText.value = data.responseData.translatedText;
+      outputText.value = data.responseData.translatedText;
+
+if (window.saveSearch) window.saveSearch(text, data.responseData.translatedText, from, to);
+
+showStatus("Translation successful!");
 
       showStatus("Translation successful!");
 
