@@ -1,12 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// 👇 YAHAN APNI FIREBASE WALI CHABI DALO 👇
 const firebaseConfig = {
-  apiKey: "TUMHARI_API_KEY_YAHAN",
-  authDomain: "TUMHARA-PROJECT.firebaseapp.com",
-  projectId: "TUMHARA-PROJECT-ID",
-  appId: "TUMHARA-APP-ID"
+  apiKey: "AIzaSyD4jrGIxshHl4Lw8FXI2vUn0G7n4MtMWk0",
+  authDomain: "rajan-ai-translator-71739.firebaseapp.com",
+  projectId: "rajan-ai-translator-71739",
+  storageBucket: "rajan-ai-translator-71739.firebasestorage.app",
+  messagingSenderId: "670745367116",
+  appId: "1:670745367116:web:847415d683fb8005f2dae9"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -20,29 +21,34 @@ const userName = document.getElementById("userName");
 const userPhoto = document.getElementById("userPhoto");
 const loginStatus = document.getElementById("loginStatus");
 
-loginBtn.addEventListener("click", async () => {
-  loginStatus.textContent = "Google khul raha hai...";
-  try {
-    const result = await signInWithPopup(auth, provider);
-    loginStatus.textContent = "Welcome " + result.user.displayName;
-  } catch (error) {
-    loginStatus.textContent = "Error: " + error.message;
-    alert(error.message);
-  }
-});
+if (loginBtn) {
+  loginBtn.addEventListener("click", async () => {
+    if (loginStatus) loginStatus.textContent = "Google khul raha hai...";
+    try {
+      const result = await signInWithPopup(auth, provider);
+      if (loginStatus) loginStatus.textContent = "Welcome " + result.user.displayName;
+    } catch (error) {
+      if (loginStatus) loginStatus.textContent = "Error: " + error.message;
+      alert(error.message);
+    }
+  });
+}
 
-logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
-});
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+  });
+}
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    loginBtn.style.display = "none";
-    userInfo.style.display = "block";
-    userName.textContent = user.displayName;
-    userPhoto.src = user.photoURL;
+    if (loginBtn) loginBtn.style.display = "none";
+    if (userInfo) userInfo.style.display = "block";
+    if (userName) userName.textContent = user.displayName;
+    if (userPhoto) userPhoto.src = user.photoURL;
+    if (loginStatus) loginStatus.textContent = "Welcome " + user.displayName;
   } else {
-    loginBtn.style.display = "block";
-    userInfo.style.display = "none";
+    if (loginBtn) loginBtn.style.display = "block";
+    if (userInfo) userInfo.style.display = "none";
   }
 });
